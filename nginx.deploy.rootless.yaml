@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: nginx
+      app.kubernetes.io/name: nginx-php-persistent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/instance: nginx
+        app.kubernetes.io/name: nginx-php-persistent
+    spec:
+      containers:
+      - image: nginx:alpine
+        imagePullPolicy: IfNotPresent
+        name: nginx
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /app/web/sites/default/files/
+          name: nginx
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          set -e
+          SENTINEL="/storage/.lagoon-rootless-migration-complete"
+          if ! [ -f "$SENTINEL" ]; then
+            find /storage -exec chown 10000:10001 {} +
+            find /storage -exec chmod g+rw {} +
+            find /storage -type d -exec chmod g+x {} +
+            touch "$SENTINEL"
+          fi
+        image: busybox:musl
+        imagePullPolicy: IfNotPresent
+        name: fix-storage-permissions
+        securityContext:
+          runAsUser: 0
+        volumeMounts:
+        - mountPath: /storage
+          name: nginx
+      securityContext:
+        fsGroup: 10001
+        runAsGroup: 0
+        runAsUser: 10000
+      volumes:
+      - name: nginx
+        persistentVolumeClaim:
+          claimName: nginx

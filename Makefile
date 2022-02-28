@@ -30,7 +30,7 @@ rootless:
 	kubectl logs --prefix --tail=64 \
 		-l app.kubernetes.io/instance=nginx \
 		-c fix-storage-permissions
-	kubectl exec -it \
+	-kubectl exec -it \
 		$$(kubectl get pod -o json | jq -r '.items[0].metadata.name') \
 		-- sh -c 'touch /app/web/sites/default/files/newfile; chmod 777 /app/web/sites/default/files/chmodfile'
 	kubectl exec -it \

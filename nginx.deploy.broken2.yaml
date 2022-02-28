@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx
+  name: nginx-test
 spec:
   selector:
     matchLabels:
@@ -40,4 +40,4 @@ spec:
       volumes:
       - name: nginx
         persistentVolumeClaim:
-          claimName: nginx
+          claimName: nginx-test

@@ -45,5 +45,5 @@ rootPod:
 
 .PHONY: clean
 clean:
-	kubectl delete --wait deploy nginx-test
-	kubectl delete --wait pvc nginx-test
+	-kubectl delete --wait deploy nginx-test
+	-kubectl delete --wait pvc nginx-test

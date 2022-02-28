@@ -33,6 +33,7 @@ spec:
           echo baz > /storage/foo/bar/baz
           echo quux > /storage/foo/quux
           echo aaaa > /storage/oldfile
+          echo chmodme > /storage/chmodfile
           ls -lahR /storage
         image: busybox:musl
         imagePullPolicy: IfNotPresent

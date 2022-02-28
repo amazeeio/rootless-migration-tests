@@ -1,0 +1,92 @@
+kubectl apply --wait -f \
+	nginx.deploy.root.yaml,nginx.pvc.yaml
+deployment.apps/nginx-test created
+persistentvolumeclaim/nginx-test created
+while ! kubectl get pod -o json | jq -e '[.items[].status.phase]  == ["Running"]'; do sleep 2; done
+false
+true
+kubectl apply --wait -f \
+	nginx.deploy.broken.yaml
+deployment.apps/nginx-test configured
+while ! kubectl get pod -o json | jq -e '[.items[].status.phase]  == ["Running"]'; do sleep 2; done
+false
+true
+kubectl logs --all-containers --prefix --tail=64 \
+	-l app.kubernetes.io/instance=nginx
+[pod/nginx-test-579d4896c5-79nvg/init-storage] /storage:
+[pod/nginx-test-579d4896c5-79nvg/init-storage] total 16K    
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxrws--x    3 500      501         6.0K Feb 28 14:59 .
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-xr-x    1 root     root          66 Feb 28 14:59 ..
+[pod/nginx-test-579d4896c5-79nvg/init-storage] -rw-r--r--    1 400      401            8 Feb 28 14:59 chmodfile
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-sr-x    3 400      401         6.0K Feb 28 14:59 foo
+[pod/nginx-test-579d4896c5-79nvg/init-storage] -rw-r--r--    1 400      401            5 Feb 28 14:59 oldfile
+[pod/nginx-test-579d4896c5-79nvg/init-storage] 
+[pod/nginx-test-579d4896c5-79nvg/init-storage] /storage/foo:
+[pod/nginx-test-579d4896c5-79nvg/init-storage] total 16K    
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-sr-x    3 400      401         6.0K Feb 28 14:59 .
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxrws--x    3 500      501         6.0K Feb 28 14:59 ..
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-sr-x    2 400      401         6.0K Feb 28 14:59 bar
+[pod/nginx-test-579d4896c5-79nvg/init-storage] -rw-r--r--    1 400      401            5 Feb 28 14:59 quux
+[pod/nginx-test-579d4896c5-79nvg/init-storage] 
+[pod/nginx-test-579d4896c5-79nvg/init-storage] /storage/foo/bar:
+[pod/nginx-test-579d4896c5-79nvg/init-storage] total 12K    
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-sr-x    2 400      401         6.0K Feb 28 14:59 .
+[pod/nginx-test-579d4896c5-79nvg/init-storage] drwxr-sr-x    3 400      401         6.0K Feb 28 14:59 ..
+[pod/nginx-test-579d4896c5-79nvg/init-storage] -rw-r--r--    1 400      401            4 Feb 28 14:59 baz
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+[pod/nginx-test-579d4896c5-79nvg/nginx] 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+[pod/nginx-test-579d4896c5-79nvg/nginx] 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+[pod/nginx-test-579d4896c5-79nvg/nginx] /docker-entrypoint.sh: Configuration complete; ready for start up
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: using the "epoll" event method
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: nginx/1.21.6
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: built by gcc 10.3.1 20211027 (Alpine 10.3.1_git20211027) 
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: OS: Linux 5.4.176-91.338.amzn2.x86_64
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: getrlimit(RLIMIT_NOFILE): 1048576:1048576
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: start worker processes
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: start worker process 32
+[pod/nginx-test-579d4896c5-79nvg/nginx] 2022/02/28 14:59:20 [notice] 1#1: start worker process 33
+kubectl apply --wait -f \
+	nginx.deploy.rootless.yaml
+deployment.apps/nginx-test configured
+while ! kubectl get pod -o json | jq -e '[.items[].status.phase]  == ["Running"]'; do sleep 2; done
+false
+true
+kubectl logs --prefix --tail=64 \
+	-l app.kubernetes.io/instance=nginx \
+	-c fix-storage-permissions
+kubectl exec \
+	$(kubectl get pod -o json | jq -r '.items[0].metadata.name') \
+	-- sh -c 'touch /app/web/sites/default/files/newfile; chmod 777 /app/web/sites/default/files/chmodfile'
+kubectl exec \
+	$(kubectl get pod -o json | jq -r '.items[0].metadata.name') \
+	-- sh -c 'touch /app/web/sites/default/files/newfile; ls -lahR /app/web/sites/default/files/'
+/app/web/sites/default/files/:
+total 24K    
+drwxrws--x    3 10000    root        6.0K Feb 28 14:59 .
+drwxr-xr-x    3 root     root          19 Feb 28 14:59 ..
+-rw-r--r--    1 root     root           0 Feb 28 14:59 .lagoon-rootless-migration-complete
+-rwxrwxrwx    1 10000    root           8 Feb 28 14:59 chmodfile
+drwxr-sr-x    3 10000    root        6.0K Feb 28 14:59 foo
+-rw-r--r--    1 10000    root           0 Feb 28 14:59 newfile
+-rw-r--r--    1 10000    root           5 Feb 28 14:59 oldfile
+
+/app/web/sites/default/files/foo:
+total 16K    
+drwxr-sr-x    3 10000    root        6.0K Feb 28 14:59 .
+drwxrws--x    3 10000    root        6.0K Feb 28 14:59 ..
+drwxr-sr-x    2 10000    root        6.0K Feb 28 14:59 bar
+-rw-r--r--    1 10000    root           5 Feb 28 14:59 quux
+
+/app/web/sites/default/files/foo/bar:
+total 12K    
+drwxr-sr-x    2 10000    root        6.0K Feb 28 14:59 .
+drwxr-sr-x    3 10000    root        6.0K Feb 28 14:59 ..
+-rw-r--r--    1 10000    root           4 Feb 28 14:59 baz
+kubectl delete --wait deploy nginx-test
+deployment.apps "nginx-test" deleted
+kubectl delete --wait pvc nginx-test
+persistentvolumeclaim "nginx-test" deleted

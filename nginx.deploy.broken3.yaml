@@ -29,16 +29,12 @@ spec:
         - sh
         - -c
         - |
-          mkdir -p /storage/foo/bar
-          echo baz > /storage/foo/bar/baz
-          echo quux > /storage/foo/quux
-          echo aaaa > /storage/aaaa
           chown 500:501 /storage
           find /storage -mindepth 1 -exec chown 400:401 {} +
           ls -lahR /storage
         image: busybox:musl
         imagePullPolicy: IfNotPresent
-        name: use-storage
+        name: init-storage
         volumeMounts:
         - mountPath: /storage
           name: nginx

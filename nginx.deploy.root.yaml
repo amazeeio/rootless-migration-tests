@@ -24,6 +24,22 @@ spec:
         volumeMounts:
         - mountPath: /app/web/sites/default/files/
           name: nginx
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - |
+          mkdir -p /storage/foo/bar
+          echo baz > /storage/foo/bar/baz
+          echo quux > /storage/foo/quux
+          echo aaaa > /storage/oldfile
+          ls -lahR /storage
+        image: busybox:musl
+        imagePullPolicy: IfNotPresent
+        name: init-storage
+        volumeMounts:
+        - mountPath: /storage
+          name: nginx
       volumes:
       - name: nginx
         persistentVolumeClaim:

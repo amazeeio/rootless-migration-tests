@@ -33,8 +33,8 @@ spec:
           SENTINEL="/storage/.lagoon-rootless-migration-complete"
           if ! [ -f "$SENTINEL" ]; then
             find /storage -exec chown 10000:0 {} +
-            find /storage -exec chmod u+rw,g+r {} +
-            find /storage -type d -exec chmod u+x,g+x {} +
+            find /storage -exec chmod a+r,u+w {} +
+            find /storage -type d -exec chmod a+x {} +
             touch "$SENTINEL"
           fi
         image: busybox:musl

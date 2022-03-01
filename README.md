@@ -17,7 +17,7 @@ The `Makefile` orchestrates all the testing and prints results to `stdout`.
 Run it like so in a test namespace on your Kubernetes cluster:
 
 ```
-(make broken; make rootless; make clean) | tee /tmp/test.log
+(make broken; make rootless; make clean) 2>&1 | tee /tmp/test.log
 ```
 
 This will:
@@ -30,13 +30,13 @@ Things to look for when checking permissions and ownership in the output:
 
 * `newfile` permissions and ownership should match `oldfile`.
 * `new/dir` permissions and ownership should match `foo/bar`.
+* `foo/bar/baz` permissions and ownership should match `foo/quux`.
 * other file and directory permissions are homogeneous.
 * any errors from the `touch`/`mkdir`/`chmod`/`rm` commands in the rootless container.
 
 ## Results
 
 Results for three major hosted Kubernetes services are provided.
-
 
 * [EKS](./test-results/eks.log) (using the deprecated in-tree EFS provisionser) - passes tests.
 * [GKE](./test-results/gke.log) - passes tests.

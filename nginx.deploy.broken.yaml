@@ -31,6 +31,7 @@ spec:
         - |
           chown 500:501 /storage
           find /storage -mindepth 1 -exec chown 400:401 {} +
+          chmod -R 400 /storage/foo/bar
           ls -lahR /storage
         image: busybox:musl
         imagePullPolicy: IfNotPresent
